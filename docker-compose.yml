@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./React-TuneBox
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - tunebox-net
+    depends_on:
+      - ecommerce-service
+      - social-service
+      - customer-service
+
+  # Các dịch vụ Back-end
+  customer-service:
+    build:
+      context: ./TuneBox/TuneBox/Customer
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - tunebox-net
+    depends_on:
+      - database
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/tunebox
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  ecommerce-service:
+    build:
+      context: ./TuneBox/TuneBox/EcommerceAdmin
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    networks:
+      - tunebox-net
+    depends_on:
+      - database
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/tunebox
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  social-service:
+    build:
+      context: ./TuneBox/TuneBox/SocialAdmin
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    networks:
+      - tunebox-net
+    depends_on:
+      - database
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/tunebox
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  # Dịch vụ cơ sở dữ liệu
+  database:
+    image: mysql:8
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: tunebox
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - tunebox-net
+    volumes:
+      - db_data:/var/lib/mysql
+
+networks:
+  tunebox-net:
+    driver: bridge
+
+volumes:
+  db_data:
+
